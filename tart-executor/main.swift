@@ -23,6 +23,8 @@ import WebhookServer
 let environment = try Environment()
 
 enum Composers {
+    static let localNetworkPrivacy = LocalNetworkPrivacy()
+
     static let tart = Tart(
         homeProvider: environment,
         shell: ProcessShell()
@@ -71,17 +73,8 @@ guard let webhookPort = environment.webhookPort else {
     exit(1)
 }
 
-Task {
-    // Get local network access
-    let config = URLSessionConfiguration.default
-    config.waitsForConnectivity = true
-    let task = URLSession(configuration: config)
-    guard let url = URL(string: "http://127.0.0.1:8000") else {
-        throw URLError(.badURL)
-    }
-    var request = URLRequest(url: url)
-    request.timeoutInterval = 3
-    _ = try? await task.data(for: request)
+Composers.localNetworkPrivacy.checkAccessState { result in
+    print("Local network access result: \(result)")
 }
 
 Task {
