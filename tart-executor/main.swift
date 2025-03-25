@@ -72,6 +72,17 @@ guard let webhookPort = environment.webhookPort else {
 }
 
 Task {
+    // Make local network call to trigger local network permission dialog
+    guard let url = URL(string: "http://127.0.0.1:8000") else {
+        throw URLError(.badURL)
+    }
+    _ = try? await URLSession.shared.data(from: url)
+
+    // Read contents of home folder to trigger external drive access dialog if needed
+    if let homeFolderURL = environment.homeFolderURL {
+        _ = try? FileManager.default.contentsOfDirectory(at: homeFolderURL, includingPropertiesForKeys: nil)
+    }
+
     try await Composers.fleetWebhook.startCommandLine(
         numberOfMachines: environment.numberOfMachines,
         gitHubRunnerLabels: environment.runnerLabels,
