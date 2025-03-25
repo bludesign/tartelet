@@ -1,15 +1,42 @@
 name: Tartelet
 options:
-  bundleIdPrefix: dk.shape
+  bundleIdPrefix: com.BluDesign
   developmentLanguage: en
 configs:
   Debug: debug
   Release: release
-configFiles:
-  Debug: xcconfigs/General.xcconfig
-  Release: xcconfigs/General.xcconfig
 targets:
+  tart-executor:
+    type: tool
+    platform: macOS
+    sources: [tart-executor]
+    postCompileScripts:
+    - name: Run SwiftLint
+      path: scripts/swiftlint.sh
+      basedOnDependencyAnalysis: false
+    dependencies:
+      - package: EnvironmentSettings
+        products: EnvironmentSettings
+      - package: FileSystem
+        products: [FileSystemData, FileSystemDomain]
+      - package: GitHub
+        products: [GitHubData, GitHubDomain, WebhookServer]
+      - package: Logging
+        products: [LoggingData, LoggingDomain]
+      - package: MenuBar
+        products: MenuBar
+      - package: Networking
+        products: [NetworkingData, NetworkingDomain]
+      - package: Shell
+        products: [ShellData, ShellDomain]
+      - package: SSH
+        products: [SSHData, SSHDomain]
+      - package: VirtualMachine
+        products: [VirtualMachineData, VirtualMachineDomain]
   Tartelet:
+    configFiles:
+      Debug: xcconfigs/General.xcconfig
+      Release: xcconfigs/General.xcconfig
     scheme:
       testPlans:
         - path: Tartelet/Tartelet.xctestplan
@@ -25,7 +52,7 @@ targets:
       - package: FileSystem
         products: [FileSystemData, FileSystemDomain]
       - package: GitHub
-        products: [GitHubData, GitHubDomain]
+        products: [GitHubData, GitHubDomain, WebhookServer]
       - package: Keychain
         products: Keychain
       - package: Logging
@@ -43,6 +70,7 @@ targets:
       - package: VirtualMachine
         products: [VirtualMachineData, VirtualMachineDomain]
 localPackages:
+  - Packages/EnvironmentSettings
   - Packages/FileSystem
   - Packages/GitHub
   - Packages/Keychain

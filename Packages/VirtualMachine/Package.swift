@@ -26,10 +26,12 @@ let package = Package(
             "VirtualMachineDomain",
             .product(name: "Keychain", package: "Keychain"),
             .product(name: "LoggingDomain", package: "Logging"),
-            .product(name: "ShellDomain", package: "Shell")
+            .product(name: "ShellDomain", package: "Shell"),
+            .product(name: "SSHDomain", package: "SSH")
         ]),
         .target(name: "VirtualMachineDomain", dependencies: [
             .product(name: "GitHubDomain", package: "GitHub"),
+            .product(name: "WebhookServer", package: "GitHub"),
             .product(name: "LoggingDomain", package: "Logging"),
             .product(name: "SSHDomain", package: "SSH")
         ])

@@ -38,6 +38,8 @@ internal enum L10n {
     internal enum VirtualMachines {
       /// Start
       internal static let start = L10n.tr("Localizable", "menu_bar_item.virtual_machines.start", fallback: "Start")
+      /// Start Webhook
+      internal static let startWebhook = L10n.tr("Localizable", "menu_bar_item.virtual_machines.start_webhook", fallback: "Start Webhook")
       /// Stop
       internal static let stop = L10n.tr("Localizable", "menu_bar_item.virtual_machines.stop", fallback: "Stop")
       /// Stopping...

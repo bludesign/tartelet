@@ -11,47 +11,38 @@ import ShellData
 import SSHData
 import VirtualMachineData
 import VirtualMachineDomain
+import WebhookServer
 
 enum Composers {
     static let settingsStore = AppStorageSettingsStore()
+
+    static let tart = Tart(
+        homeProvider: SettingsTartHomeProvider(
+            settingsStore: settingsStore
+        ),
+        shell: ProcessShell()
+    )
 
     static let fleet = VirtualMachineFleet(
         logger: logger(subsystem: "VirtualMachineFleet"),
         baseVirtualMachine: SSHConnectingVirtualMachine(
             logger: logger(subsystem: "SSHConnectingVirtualMachine"),
             virtualMachine: SettingsVirtualMachine(
-                tart: Tart(
-                    homeProvider: SettingsTartHomeProvider(
-                        settingsStore: settingsStore
-                    ),
-                    shell: ProcessShell()
-                ),
-                settingsStore: settingsStore
+                tart: tart,
+                settingsStore: settingsStore,
+                runnerLabels: nil
             ),
-            sshClient: VirtualMachineSSHClient(
-                logger: logger(subsystem: "VirtualMachineSSHClient"),
-                client: CitadelSSHClient(
-                    logger: logger(subsystem: "CitadelSSHClient")
-                ),
-                ipAddressReader: RetryingVirtualMachineIPAddressReader(),
-                credentialsStore: virtualMachineSSHCredentialsStore,
-                connectionHandler: CompositeVirtualMachineSSHConnectionHandler([
-                    PostBootScriptSSHConnectionHandler(),
-                    GitHubActionsRunnerSSHConnectionHandler(
-                        logger: logger(subsystem: "GitHubActionsRunnerSSHConnectionHandler"),
-                        client: NetworkingGitHubClient(
-                            credentialsStore: gitHubCredentialsStore,
-                            networkingService: URLSessionNetworkingService(
-                                logger: logger(subsystem: "URLSessionNetworkingService")
-                            )
-                        ),
-                        credentialsStore: gitHubCredentialsStore,
-                        configuration: SettingsGitHubActionsRunnerConfiguration(
-                            settingsStore: settingsStore
-                        )
-                    )
-                ])
-            )
+            sshClient: sshClient
+        )
+    )
+
+    static let fleetWebhook = VirtualMachineFleetWebhook(
+        logger: logger(subsystem: "VirtualMachineFleetWebhook"),
+        webhookServer: WebhookServer(),
+        virtualMachineProvider: TartVirtualMachineProvider(
+            logger: logger(subsystem: "TartVirtualMachineProvider"),
+            tart: tart,
+            sshClient: sshClient
         )
     )
 
@@ -64,10 +55,35 @@ enum Composers {
                 ),
                 shell: ProcessShell()
             ),
-            settingsStore: settingsStore
+            settingsStore: settingsStore,
+            runnerLabels: nil
         )
     )
 
+    static let sshClient = VirtualMachineSSHClient(
+        logger: logger(subsystem: "VirtualMachineSSHClient"),
+        client: CitadelSSHClient(
+            logger: logger(subsystem: "CitadelSSHClient")
+        ),
+        ipAddressReader: RetryingVirtualMachineIPAddressReader(),
+        credentialsStore: virtualMachineSSHCredentialsStore,
+        connectionHandler: CompositeVirtualMachineSSHConnectionHandler([
+            PostBootScriptSSHConnectionHandler(),
+            GitHubActionsRunnerSSHConnectionHandler(
+                logger: logger(subsystem: "GitHubActionsRunnerSSHConnectionHandler"),
+                client: NetworkingGitHubClient(
+                    credentialsStore: gitHubCredentialsStore,
+                    networkingService: URLSessionNetworkingService(
+                        logger: logger(subsystem: "URLSessionNetworkingService")
+                    )
+                ),
+                credentialsStore: gitHubCredentialsStore,
+                configuration: SettingsGitHubActionsRunnerConfiguration(
+                    settingsStore: settingsStore
+                )
+            )
+        ])
+    )
     static let gitHubCredentialsStore = KeychainGitHubCredentialsStore(
         keychain: keychain(
             logger: logger(subsystem: "GitHubCredentialsStore")
@@ -94,6 +110,6 @@ enum Composers {
 
 private extension Composers {
     private static func keychain(logger: Logger) -> Keychain {
-        Keychain(logger: logger, accessGroup: "566MC7D8D4.dk.shape.Tartelet")
+        Keychain(logger: logger, accessGroup: "B88BRQ88KH.com.BluDesign.Tartelet")
     }
 }

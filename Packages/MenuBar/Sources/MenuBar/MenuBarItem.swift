@@ -8,6 +8,7 @@ public struct MenuBarItem<SettingsStoreType: SettingsStore & Observable>: Scene 
     @State private var isInserted: Bool
     private let settingsStore: SettingsStoreType
     private let fleet: VirtualMachineFleet
+    private let fleetWebhook: VirtualMachineFleetWebhook
     private let editor: VirtualMachineEditor
     private let configurationState: ConfigurationState
     private let virtualMachineState: VirtualMachineState
@@ -22,12 +23,14 @@ public struct MenuBarItem<SettingsStoreType: SettingsStore & Observable>: Scene 
     public init(
         settingsStore: SettingsStoreType,
         fleet: VirtualMachineFleet,
+        fleetWebhook: VirtualMachineFleetWebhook,
         editor: VirtualMachineEditor,
         configurationState: ConfigurationState,
         virtualMachineState: VirtualMachineState
     ) {
         self.settingsStore = settingsStore
         self.fleet = fleet
+        self.fleetWebhook = fleetWebhook
         self.editor = editor
         self.configurationState = configurationState
         self.virtualMachineState = virtualMachineState
@@ -92,11 +95,26 @@ private extension MenuBarItem {
         ) { action in
             switch action {
             case .startFleet:
-                fleet.start(numberOfMachines: settingsStore.numberOfVirtualMachines)
+                fleet.start(
+                    numberOfMachines: settingsStore.numberOfVirtualMachines,
+                    isInsecure: settingsStore.insecurePull,
+                    isHeadless: settingsStore.headless,
+                    netBridgedAdapter: settingsStore.netBridgedAdapter
+                )
+            case .startFleetWebhook:
+                fleetWebhook.start(
+                    numberOfMachines: settingsStore.numberOfVirtualMachines,
+                    gitHubRunnerLabels: settingsStore.gitHubRunnerLabels,
+                    webhookPort: settingsStore.webhookPort.flatMap { Int($0) },
+                    isInsecure: settingsStore.insecurePull,
+                    isHeadless: settingsStore.headless,
+                    netBridgedAdapter: settingsStore.netBridgedAdapter
+                )
             case .stopFleet:
                 fleet.stop()
+                fleetWebhook.stop()
             case .startEditor:
-                editor.start()
+                editor.start(netBridgedAdapter: settingsStore.netBridgedAdapter, isHeadless: settingsStore.headless)
             }
         }
     }

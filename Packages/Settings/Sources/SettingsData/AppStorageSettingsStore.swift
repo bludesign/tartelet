@@ -15,6 +15,10 @@ public final class AppStorageSettingsStore: SettingsStore {
         static let gitHubRunnerLabels = "gitHubRunnerLabels"
         static let gitHubRunnerGroup = "gitHubRunnerGroup"
         static let githubRunnerScope = "githubRunnerScope"
+        static let webhookPort = "webhookPort"
+        static let insecurePull = "insecurePull"
+        static let netBridgedAdapter = "netBridgedAdapter"
+        static let headless = "headless"
     }
 
     public var applicationUIMode: ApplicationUIMode {
@@ -136,6 +140,50 @@ public final class AppStorageSettingsStore: SettingsStore {
         set {
             withMutation(keyPath: \.githubRunnerScope) {
                 userDefaults.setRawRepresentable(newValue, forKey: AppStorageKey.githubRunnerScope)
+            }
+        }
+    }
+    public var webhookPort: String? {
+        get {
+            access(keyPath: \.webhookPort)
+            return userDefaults.string(forKey: AppStorageKey.webhookPort)
+        }
+        set {
+            withMutation(keyPath: \.webhookPort) {
+                userDefaults.setValue(newValue, forKey: AppStorageKey.webhookPort)
+            }
+        }
+    }
+    public var insecurePull: Bool {
+        get {
+            access(keyPath: \.insecurePull)
+            return userDefaults.bool(forKey: AppStorageKey.insecurePull)
+        }
+        set {
+            withMutation(keyPath: \.insecurePull) {
+                userDefaults.setValue(newValue, forKey: AppStorageKey.insecurePull)
+            }
+        }
+    }
+    public var netBridgedAdapter: String? {
+        get {
+            access(keyPath: \.netBridgedAdapter)
+            return userDefaults.string(forKey: AppStorageKey.netBridgedAdapter)
+        }
+        set {
+            withMutation(keyPath: \.netBridgedAdapter) {
+                userDefaults.setValue(newValue, forKey: AppStorageKey.netBridgedAdapter)
+            }
+        }
+    }
+    public var headless: Bool {
+        get {
+            access(keyPath: \.headless)
+            return userDefaults.bool(forKey: AppStorageKey.headless)
+        }
+        set {
+            withMutation(keyPath: \.headless) {
+                userDefaults.setValue(newValue, forKey: AppStorageKey.headless)
             }
         }
     }

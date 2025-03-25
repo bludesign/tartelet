@@ -3,6 +3,7 @@ import VirtualMachineDomain
 
 public enum ConfigurationState {
     case ready
+    case readyWebhook
     case missingVirtualMachine
     case missingSSHCredentials
     case missingGitHubAppId
@@ -16,7 +17,7 @@ public enum ConfigurationState {
         virtualMachineSSHCredentialsStore: VirtualMachineSSHCredentialsStore,
         githubCredentialsStore: GitHubCredentialsStore
     ) {
-        if case .unknown = settingsStore.virtualMachine {
+        if case .unknown = settingsStore.virtualMachine, settingsStore.webhookPort == nil {
             self = .missingVirtualMachine
         } else if (virtualMachineSSHCredentialsStore.username ?? "").isEmpty {
             self = .missingSSHCredentials
@@ -35,6 +36,8 @@ public enum ConfigurationState {
         } else if settingsStore.githubRunnerScope == .repo
                     && (githubCredentialsStore.repositoryName ?? "").isEmpty {
             self = .missingGitHubRepositoryName
+        } else if settingsStore.webhookPort != nil {
+            self = .readyWebhook
         } else {
             self = .ready
         }
@@ -44,7 +47,7 @@ public enum ConfigurationState {
 public extension ConfigurationState {
     var shortInstruction: String {
         switch self {
-        case .ready:
+        case .ready, .readyWebhook:
             L10n.Settings.ConfigurationState.Ready.shortInstruction
         case .missingVirtualMachine:
             L10n.Settings.ConfigurationState.MissingVirtualMachine.shortInstruction

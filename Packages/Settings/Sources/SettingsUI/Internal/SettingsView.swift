@@ -54,6 +54,13 @@ struct SettingsView<SettingsStoreType: SettingsStore & Observable>: View {
                     Asset.githubActions.swiftUIImage
                 }
             }
+            WebhookSettingsView(
+                settingsStore: settingsStore,
+                isSettingsEnabled: isSettingsEnabled
+            )
+            .tabItem {
+                Label(L10n.Settings.webhook, systemImage: "globe")
+            }
             DocumentationSettingsView()
                 .tabItem {
                     Label(L10n.Settings.documentation, systemImage: "text.book.closed")

@@ -12,12 +12,16 @@ let package = Package(
         ]),
         .library(name: "GitHubDomain", targets: [
             "GitHubDomain"
+        ]),
+        .library(name: "WebhookServer", targets: [
+            "WebhookServer"
         ])
     ],
     dependencies: [
         .package(path: "../Keychain"),
         .package(path: "../Networking"),
-        .package(url: "https://github.com/Kitura/Swift-JWT", from: "4.0.0")
+        .package(url: "https://github.com/Kitura/Swift-JWT", from: "4.0.0"),
+        .package(url: "https://github.com/swhitty/FlyingFox.git", .upToNextMajor(from: "0.21.0"))
     ],
     targets: [
         .target(name: "GitHubData", dependencies: [
@@ -27,6 +31,10 @@ let package = Package(
         ]),
         .target(name: "GitHubDomain", dependencies: [
             .product(name: "SwiftJWT", package: "Swift-JWT")
+        ]),
+        .target(name: "WebhookServer", dependencies: [
+            "GitHubDomain",
+            .product(name: "FlyingFox", package: "FlyingFox")
         ])
     ]
 )

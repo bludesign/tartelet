@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: [tartelet, "10.0.2.54:5000/tart/macos-sequoia-xcode:latest", "memory:24576", "cpu:6"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Set up homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Run xcodegen
+        run: xcodegen
+      - name: Run xcodebuild
+        run: xcodebuild -quiet -scheme tart-executor -project ./Tartelet.xcodeproj -configuration Release -destination 'generic/platform=macOS' -archivePath ./Fastlane/builds/tart-executor archive
+      - name: Zip tart-executor
+        run: zip -j Fastlane/builds/tart-executor.zip Fastlane/builds/tart-executor.xcarchive/Products/usr/local/bin/tart-executor
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Fastlane/builds/tart-executor.zip

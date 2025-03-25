@@ -9,7 +9,7 @@ struct EditorMenuBarItem: View {
 
     private var title: String {
         switch virtualMachineState {
-        case .ready, .fleetStarted, .stoppingFleet:
+        case .ready, .fleetStarted, .fleetWebhookStarted, .stoppingFleet, .stoppingFleetWebook:
             L10n.MenuBarItem.Editor.EditVirtualMachine.start
         case .editorStarted:
             L10n.MenuBarItem.Editor.EditVirtualMachine.editing

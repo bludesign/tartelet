@@ -5,6 +5,7 @@ import VirtualMachineDomain
 struct VirtualMachinesMenuContent: View {
     enum Action {
         case startFleet
+        case startFleetWebhook
         case stopFleet
         case startEditor
     }
@@ -19,6 +20,9 @@ struct VirtualMachinesMenuContent: View {
             virtualMachineState: virtualMachineState,
             startFleet: {
                 onSelect(.startFleet)
+            },
+            startFleetWebhook: {
+                onSelect(.startFleetWebhook)
             },
             stopFleet: {
                 onSelect(.stopFleet)

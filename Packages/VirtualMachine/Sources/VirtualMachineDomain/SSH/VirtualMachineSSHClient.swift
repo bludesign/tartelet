@@ -23,7 +23,7 @@ private enum VirtualMachineSSHClientError: LocalizedError, CustomDebugStringConv
     }
 }
 
-public struct VirtualMachineSSHClient<SSHClientType: SSHClient> {
+public final class VirtualMachineSSHClient<SSHClientType: SSHClient> {
     private let logger: Logger
     private let client: SSHClientType
     private let ipAddressReader: VirtualMachineIPAddressReader
@@ -44,8 +44,11 @@ public struct VirtualMachineSSHClient<SSHClientType: SSHClient> {
         self.connectionHandler = connectionHandler
     }
 
-    func connect(to virtualMachine: VirtualMachine) async throws -> SSHClientType.SSHConnectionType {
-        let ipAddress = try await getIPAddress(of: virtualMachine)
+    func connect(
+        to virtualMachine: VirtualMachine,
+        shouldUseArpResolver: Bool
+    ) async throws -> SSHClientType.SSHConnectionType {
+        let ipAddress = try await getIPAddress(of: virtualMachine, shouldUseArpResolver: shouldUseArpResolver)
         let connection = try await connectToVirtualMachine(
             named: virtualMachine.name,
             on: ipAddress,
@@ -57,9 +60,12 @@ public struct VirtualMachineSSHClient<SSHClientType: SSHClient> {
 }
 
 private extension VirtualMachineSSHClient {
-    private func getIPAddress(of virtualMachine: VirtualMachine) async throws -> String {
+    private func getIPAddress(of virtualMachine: VirtualMachine, shouldUseArpResolver: Bool) async throws -> String {
         do {
-            return try await ipAddressReader.readIPAddress(of: virtualMachine)
+            return try await ipAddressReader.readIPAddress(
+                of: virtualMachine,
+                shouldUseArpResolver: shouldUseArpResolver
+            )
         } catch {
             logger.error(
                 "Failed obtaining IP address of virtual machine named \(virtualMachine.name): "

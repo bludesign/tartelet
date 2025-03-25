@@ -12,9 +12,10 @@ public struct SettingsScene<SettingsStoreType: SettingsStore & Observable>: Scen
     private let virtualMachinesSourceNameRepository: VirtualMachineSourceNameRepository
     private let logExporter: LogExporter
     private let fleet: VirtualMachineFleet
+    private let fleetWebhook: VirtualMachineFleetWebhook
     private let editor: VirtualMachineEditor
     private var isSettingsEnabled: Bool {
-        !fleet.isStarted && !editor.isStarted
+        !fleet.isStarted && !editor.isStarted && !fleetWebhook.isStarted
     }
 
     public init(
@@ -24,6 +25,7 @@ public struct SettingsScene<SettingsStoreType: SettingsStore & Observable>: Scen
         virtualMachinesSourceNameRepository: VirtualMachineSourceNameRepository,
         logExporter: LogExporter,
         fleet: VirtualMachineFleet,
+        fleetWebhook: VirtualMachineFleetWebhook,
         editor: VirtualMachineEditor
     ) {
         self.settingsStore = settingsStore
@@ -32,6 +34,7 @@ public struct SettingsScene<SettingsStoreType: SettingsStore & Observable>: Scen
         self.virtualMachinesSourceNameRepository = virtualMachinesSourceNameRepository
         self.logExporter = logExporter
         self.fleet = fleet
+        self.fleetWebhook = fleetWebhook
         self.editor = editor
     }
 

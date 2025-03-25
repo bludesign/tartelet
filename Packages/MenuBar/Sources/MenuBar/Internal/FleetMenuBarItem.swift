@@ -6,6 +6,7 @@ struct FleetMenuBarItem: View {
     let configurationState: ConfigurationState
     let virtualMachineState: VirtualMachineState
     let startFleet: () -> Void
+    let startFleetWebhook: () -> Void
     let stopFleet: () -> Void
 
     var body: some View {
@@ -17,7 +18,7 @@ struct FleetMenuBarItem: View {
                 Text(title)
             }
         }
-        if virtualMachineState == .stoppingFleet {
+        if virtualMachineState == .stoppingFleet || virtualMachineState == .stoppingFleetWebook {
             Button {} label: {
                 Text(L10n.MenuBarItem.VirtualMachines.stoppingInfo)
             }
@@ -29,12 +30,20 @@ struct FleetMenuBarItem: View {
 private extension FleetMenuBarItem {
     private var title: String {
         switch (configurationState, virtualMachineState) {
-        case (.ready, .stoppingFleet):
+        case (.ready, .stoppingFleet),
+             (.ready, .stoppingFleetWebook),
+             (.readyWebhook, .stoppingFleet),
+             (.readyWebhook, .stoppingFleetWebook):
             return L10n.MenuBarItem.VirtualMachines.stopping
-        case (.ready, .fleetStarted):
+        case (.ready, .fleetStarted),
+             (.ready, .fleetWebhookStarted),
+             (.readyWebhook, .fleetStarted),
+             (.readyWebhook, .fleetWebhookStarted):
             return L10n.MenuBarItem.VirtualMachines.stop
         case (.ready, .ready), (.ready, .editorStarted):
             return L10n.MenuBarItem.VirtualMachines.start
+        case (.readyWebhook, .ready):
+            return L10n.MenuBarItem.VirtualMachines.startWebhook
         case (_, _):
             return configurationState.shortInstruction
         }
@@ -43,9 +52,15 @@ private extension FleetMenuBarItem {
     private var image: Image {
         switch (configurationState, virtualMachineState) {
         case (.ready, .stoppingFleet),
-             (.ready, .fleetStarted):
+             (.ready, .stoppingFleetWebook),
+             (.readyWebhook, .stoppingFleet),
+             (.readyWebhook, .stoppingFleetWebook),
+             (.ready, .fleetStarted),
+             (.ready, .fleetWebhookStarted),
+             (.readyWebhook, .fleetStarted),
+             (.readyWebhook, .fleetWebhookStarted):
             return Image(systemName: "stop.fill")
-        case (.ready, .ready), (.ready, .editorStarted):
+        case (.ready, .ready), (.ready, .editorStarted), (.readyWebhook, .ready):
             return Image(systemName: "play.fill")
         case (_, _):
             return Image(systemName: "switch.2")
@@ -54,16 +69,16 @@ private extension FleetMenuBarItem {
 
     private var isDisabled: Bool {
         switch virtualMachineState {
-        case .stoppingFleet, .editorStarted:
+        case .stoppingFleet, .editorStarted, .stoppingFleetWebook:
             return true
-        case .fleetStarted, .ready:
+        case .fleetStarted, .fleetWebhookStarted, .ready:
             return false
         }
     }
 
     private var presentSettings: Bool {
         switch configurationState {
-        case .ready:
+        case .ready, .readyWebhook:
             false
         case _:
             true
@@ -72,12 +87,21 @@ private extension FleetMenuBarItem {
 
     private func performAction() {
         switch (configurationState, virtualMachineState) {
-        case (.ready, .stoppingFleet), (.ready, .editorStarted):
+        case (.ready, .stoppingFleet),
+             (.ready, .stoppingFleetWebook),
+             (.readyWebhook, .stoppingFleet),
+             (.readyWebhook, .stoppingFleetWebook),
+             (.ready, .editorStarted):
             break
-        case (.ready, .fleetStarted):
+        case (.ready, .fleetStarted),
+             (.ready, .fleetWebhookStarted),
+             (.readyWebhook, .fleetStarted),
+             (.readyWebhook, .fleetWebhookStarted):
             stopFleet()
         case (.ready, .ready):
             startFleet()
+        case (.readyWebhook, .ready):
+            startFleetWebhook()
         case (_, _):
             break
         }

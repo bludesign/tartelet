@@ -23,6 +23,8 @@
 "settings.virtual_machine.ssh.password" = "Password";
 "settings.virtual_machine.ssh.footer" = "The credentials are used to SSH into the virtual machine to configure it to start the GitHub Actions runner. Make sure \"Remote Login\" is enabled in the virtual machine.";
 "settings.virtual_machine.start_virtual_machines_on_app_launch" = "Start Virtual Machines on App Launch";
+"settings.virtual_machine.headless" = "Headless/No Graphics";
+"settings.virtual_machine.netBridgedAdapter" = "Network Bridged Adapter";
 
 "settings.github" = "GitHub";
 "settings.github.organization_name" = "Organization Name";
@@ -51,6 +53,11 @@
 
 "settings.runner_scope.organization" = "Organization";
 "settings.runner_scope.repository" = "Repository";
+
+"settings.webhook" = "Webhook";
+"settings.webhook.port" = "Webhook Port";
+"settings.webhook.port.subtitle" = "Webhook must be publicly accesible and set in Github app settings. Leave blank to disable webhook server. When webhook is enabled set the labels on builds as the VM name to be cloned and the label set in runner settings in this app.";
+"settings.webhook.insecurePulls" = "Allow Insecure Image Pulls";
 
 "settings.documentation" = "Documentation";
 "settings.documentation.introduction" = "Find articles on getting started with Tartelet and advanced topics in the documentation.";
