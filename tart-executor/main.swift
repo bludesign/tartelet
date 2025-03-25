@@ -72,12 +72,19 @@ guard let webhookPort = environment.webhookPort else {
 }
 
 Task {
-    // Make local network call to trigger local network permission dialog
+    // Get local network access
+    let config = URLSessionConfiguration.default
+    config.waitsForConnectivity = true
+    let task = URLSession(configuration: config)
     guard let url = URL(string: "http://127.0.0.1:8000") else {
         throw URLError(.badURL)
     }
-    _ = try? await URLSession.shared.data(from: url)
+    var request = URLRequest(url: url)
+    request.timeoutInterval = 3
+    _ = try? await task.data(for: request)
+}
 
+Task {
     // Read contents of home folder to trigger external drive access dialog if needed
     if let homeFolderURL = environment.homeFolderURL {
         _ = try? FileManager.default.contentsOfDirectory(at: homeFolderURL, includingPropertiesForKeys: nil)
