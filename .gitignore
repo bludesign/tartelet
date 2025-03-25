@@ -6,5 +6,4 @@ xcuserdata
 Tartelet.xcodeproj
 build/
 Package.resolved
-/Fastlane/builds/
-Fastlane/report.xml
+/builds/

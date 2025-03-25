@@ -1,0 +1,19 @@
+tart:
+  homeFolder: /Volumes/Files/Services/tart
+  netBridgedAdapter: vlan0
+  isHeadless: true
+  insecureDomains:
+    - 10.0.2.54
+  numberOfVirtualMachines: 2
+  ssh:
+    username: admin
+    password: admin
+github:
+  runnerScope: organization
+  organizationName: bludesign
+  appId: 12345678
+  privateKey: /Users/server/bludesign.pem
+runner:
+  labels: tartelet
+webhook:
+  port: 3250

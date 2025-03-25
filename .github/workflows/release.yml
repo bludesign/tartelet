@@ -15,10 +15,6 @@ jobs:
         with:
           fetch-tags: true
           fetch-depth: 0
-      - name: Setup ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
       - name: Set up homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
@@ -27,13 +23,13 @@ jobs:
       - name: Run xcodegen
         run: xcodegen
       - name: Run xcodebuild
-        run: xcodebuild -quiet -scheme tart-executor -project ./Tartelet.xcodeproj -configuration Release -destination 'generic/platform=macOS' -archivePath ./Fastlane/builds/tart-executor archive
+        run: xcodebuild -quiet -scheme tart-executor -project ./Tartelet.xcodeproj -configuration Release -destination 'generic/platform=macOS' -archivePath ./builds/tart-executor archive
       - name: Zip tart-executor
-        run: zip -j Fastlane/builds/tart-executor.zip Fastlane/builds/tart-executor.xcarchive/Products/usr/local/bin/tart-executor
+        run: zip -j builds/tart-executor.zip builds/tart-executor.xcarchive/Products/usr/local/bin/tart-executor
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Fastlane/builds/tart-executor.zip
+          files: builds/tart-executor.zip
       - name: Update homebrew
         uses: mislav/bump-homebrew-formula-action@v3
         with:
