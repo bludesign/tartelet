@@ -34,3 +34,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: Fastlane/builds/tart-executor.zip
+      - name: Update homebrew
+        uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          formula-name: tart-executor
+          download-url: https://github.com/bludesign/tartelet/releases/download/${{ github.ref_name }}/tart-executor.zip
+          homebrew-tap: bludesign/homebrew-tart
+          create-pullrequest: false
+          create-branch: false
+        env:
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
