@@ -49,11 +49,13 @@ public final class VirtualMachineSSHClient<SSHClientType: SSHClient> {
         shouldUseArpResolver: Bool
     ) async throws -> SSHClientType.SSHConnectionType {
         let ipAddress = try await getIPAddress(of: virtualMachine, shouldUseArpResolver: shouldUseArpResolver)
+        logger.info("Got IP address of virtual machine named \(virtualMachine.name): \(ipAddress)")
         let connection = try await connectToVirtualMachine(
             named: virtualMachine.name,
             on: ipAddress,
             maximumAttempts: 3
         )
+        logger.info("Did connect to virtual machine named \(virtualMachine.name): \(ipAddress)")
         try await connectionHandler.didConnect(to: virtualMachine, through: connection)
         return connection
     }
