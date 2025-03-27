@@ -27,6 +27,8 @@ public final class Environment: TartHomeProvider,
     public let isInsecure: Bool
     public let insecureDomains: [String]
     public let webhookPort: Int
+    public let defaultMemory: Int?
+    public let defaultCpu: Int?
 
     public init() throws {
         let configUrl = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("tart-executor.yaml")
@@ -52,5 +54,7 @@ public final class Environment: TartHomeProvider,
         isInsecure = environmentYaml.tart.isInsecure ?? false
         insecureDomains = environmentYaml.tart.insecureDomains ?? []
         webhookPort = environmentYaml.webhook.port
+        defaultMemory = environmentYaml.tart.defaultMemory
+        defaultCpu = environmentYaml.tart.defaultCpu
     }
 }

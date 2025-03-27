@@ -4,6 +4,10 @@ import Foundation
 import LoggingDomain
 
 public final class RouterServer {
+    private enum RouterError: Error {
+        case wrongBody
+    }
+
     private let decoder = JSONDecoder()
     private var server: HTTPServer?
     private var hosts: [TartHost]
@@ -36,6 +40,36 @@ public final class RouterServer {
 
     public func run(port: Int) async throws {
         let server = HTTPServer(port: UInt16(port))
+        await server.appendRoute("GET /metrics") { [weak self] _ in
+            guard let self else {
+                return .init(statusCode: .badGateway)
+            }
+            let strings = try await withThrowingTaskGroup(of: String.self) { [hosts, logger] group in
+                hosts.forEach { host in
+                    group.addTask {
+                        do {
+                            let url = host.url.appending(path: "/metrics")
+                            let (data, _) = try await URLSession.shared.data(from: url)
+                            guard let string = String(data: data, encoding: .utf8) else {
+                                throw RouterError.wrongBody
+                            }
+                            return string.appending("\ntart_executor_reachable{hostname=\"\(host.hostname)\"} true")
+                        } catch {
+                            logger.error("Error getting status for host: \(host.hostname): \(error.localizedDescription)")
+                            return "tart_executor_reachable{hostname=\"\(host.hostname)\"} false"
+                        }
+                    }
+                }
+
+                var results: [String] = []
+                for try await result in group {
+                    results.append(result)
+                }
+                return results
+            }
+            let status = strings.joined(separator: "\n")
+            return .init(statusCode: .ok, body: Data(status.utf8))
+        }
         await server.appendRoute("POST /") { [weak self] request in
             guard let self else {
                 return .init(statusCode: .badGateway)

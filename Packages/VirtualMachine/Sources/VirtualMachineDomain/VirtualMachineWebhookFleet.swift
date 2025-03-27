@@ -11,6 +11,8 @@ public protocol VirtualMachineFleetSettings {
     var isInsecure: Bool { get }
     var insecureDomains: [String] { get }
     var netBridgedAdapter: String? { get }
+    var defaultMemory: Int? { get }
+    var defaultCpu: Int? { get }
 }
 
 public final class VirtualMachineFleetWebhook {
@@ -141,8 +143,8 @@ private extension VirtualMachineFleetWebhook {
             netBridgedAdapter: settings.netBridgedAdapter,
             isInsecure: isJobInsecure,
             isHeadless: settings.isHeadless,
-            memory: memoryLabel,
-            cpu: cpuLabel
+            memory: memoryLabel ?? settings.defaultMemory.map { "\($0)" },
+            cpu: cpuLabel ?? settings.defaultCpu.map { "\($0)" }
         )
         await jobHandler.handle(pendingJob: pendingJob)
     }
