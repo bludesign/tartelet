@@ -1,6 +1,6 @@
 import Foundation
 import LoggingDomain
-import WebhookServer
+import WebServer
 
 struct ActiveJob {
     let labels: Set<String>

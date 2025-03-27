@@ -1,31 +1,38 @@
 import Combine
 import Foundation
 import LoggingDomain
-import Observation
-import WebhookServer
+import WebServer
 
-@Observable
+public protocol VirtualMachineFleetSettings {
+    var numberOfMachines: Int { get }
+    var runnerLabels: String { get }
+    var webhookPort: Int { get }
+    var isHeadless: Bool { get }
+    var isInsecure: Bool { get }
+    var insecureDomains: [String] { get }
+    var netBridgedAdapter: String? { get }
+}
+
 public final class VirtualMachineFleetWebhook {
-    @MainActor
     public private(set) var isStarted = false
-    @MainActor
     public private(set) var isStopping = false
 
     private let logger: Logger
     private let webhookServer: WebhookServer
     private var webhookServerTask: Task<(), any Error>?
     private let jobHandler: JobHandler
-    private var numberOfMachines = 1
     private var gitHubRunnerLabels: Set<String>?
-    private var insecureDomains: [String]?
-    private var isInsecure = false
-    private var isHeadless = false
-    private var netBridgedAdapter: String?
     private var cancellables = Set<AnyCancellable>()
+    private let settings: VirtualMachineFleetSettings
 
-    public init(logger: Logger, webhookServer: WebhookServer, virtualMachineProvider: VirtualMachineProvider) {
+    public init(logger: Logger, webhookServer: WebhookServer, virtualMachineProvider: VirtualMachineProvider, settings: VirtualMachineFleetSettings) {
         self.logger = logger
         self.webhookServer = webhookServer
+        self.settings = settings
+        let labelsArray = settings.runnerLabels.components(separatedBy: ",").map { label in
+            label.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        gitHubRunnerLabels = Set<String>(labelsArray)
         jobHandler = .init(
             virtualMachineProvider: virtualMachineProvider,
             webhookServer: webhookServer,
@@ -36,83 +43,25 @@ public final class VirtualMachineFleetWebhook {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] workflowJob in
                 Task { [weak self] in
-                    guard let self, await isStarted else {
+                    guard let self, isStarted else {
                         return
                     }
                     await handleWorkflowJob(workflowJob)
                 }
             }
             .store(in: &cancellables)
+
+        Task {
+            await jobHandler.set(numberOfMachines: settings.numberOfMachines)
+        }
     }
 
-    @MainActor
-    public func start(
-        numberOfMachines: Int,
-        gitHubRunnerLabels: String,
-        webhookPort: Int?,
-        isInsecure: Bool,
-        isHeadless: Bool,
-        netBridgedAdapter: String?
-    ) {
-        self.isInsecure = isInsecure
-        self.isHeadless = isHeadless
-        self.netBridgedAdapter = netBridgedAdapter
-        guard let webhookPort else {
-            logger.error("Starting without webhook port")
-            return
-        }
-        guard !isStarted else {
-            return
-        }
-        self.numberOfMachines = numberOfMachines
-        Task {
-            await jobHandler.set(numberOfMachines: numberOfMachines)
-        }
-
-        let labelsArray = gitHubRunnerLabels.components(separatedBy: ",").map { label in
-            label.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        self.gitHubRunnerLabels = Set<String>(labelsArray)
-
-        webhookServerTask = Task { [webhookServer] in
-            logger.info("Starting web server on port: \(webhookPort) numberOfMachines: \(numberOfMachines)")
-            try await webhookServer.run(port: webhookPort)
-            isStarted = false
-        }
+    public func startCommandLine() async throws {
+        logger.info("Starting web server on port: \(settings.webhookPort) numberOfMachines: \(settings.numberOfMachines)")
         isStarted = true
+        try await webhookServer.run(port: settings.webhookPort)
     }
 
-    public func startCommandLine(
-        numberOfMachines: Int,
-        gitHubRunnerLabels: String,
-        webhookPort: Int,
-        isInsecure: Bool,
-        isHeadless: Bool,
-        insecureDomains: [String],
-        netBridgedAdapter: String?
-    ) async throws {
-        self.isInsecure = isInsecure
-        self.isHeadless = isHeadless
-        self.insecureDomains = insecureDomains
-        self.netBridgedAdapter = netBridgedAdapter
-        self.numberOfMachines = numberOfMachines
-        Task {
-            await jobHandler.set(numberOfMachines: numberOfMachines)
-        }
-
-        let labelsArray = gitHubRunnerLabels.components(separatedBy: ",").map { label in
-            label.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        self.gitHubRunnerLabels = Set<String>(labelsArray)
-
-        logger.info("Starting web server on port: \(webhookPort) numberOfMachines: \(numberOfMachines)")
-        Task { @MainActor in
-            isStarted = true
-        }
-        try await webhookServer.run(port: webhookPort)
-    }
-
-    @MainActor
     public func stopImmediately() {
         logger.info("Stop webhook immediately")
         isStarted = false
@@ -123,7 +72,6 @@ public final class VirtualMachineFleetWebhook {
         }
     }
 
-    @MainActor
     public func stop() {
         guard isStarted else {
             return
@@ -179,20 +127,20 @@ private extension VirtualMachineFleetWebhook {
             return
         }
 
-        let imageInsecure = insecureDomains?.contains { insecureDomain in
+        let imageInsecure = settings.insecureDomains.contains { insecureDomain in
             imageName.contains(insecureDomain)
-        } ?? false
+        }
 
-        let isJobInsecure = isInsecure || imageInsecure
+        let isJobInsecure = settings.isInsecure || imageInsecure
 
         logger.info("Workflow job: \(workflowJob.id) action: \(workflowJob.action.rawValue) image: \(imageName) isInsecure: \(isJobInsecure)")
 
         let pendingJob = PendingJob(
             workflowJob: workflowJob,
             imageName: imageName,
-            netBridgedAdapter: netBridgedAdapter,
+            netBridgedAdapter: settings.netBridgedAdapter,
             isInsecure: isJobInsecure,
-            isHeadless: isHeadless,
+            isHeadless: settings.isHeadless,
             memory: memoryLabel,
             cpu: cpuLabel
         )

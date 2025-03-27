@@ -6,12 +6,13 @@ import GitHubDomain
 import LoggingData
 import LoggingDomain
 import NetworkingData
-import Observation
 import ShellData
 import SSHData
 import VirtualMachineData
 import VirtualMachineDomain
-import WebhookServer
+import WebServer
+
+extension Environment: @retroactive VirtualMachineFleetSettings {}
 
 let environment = try Environment()
 
@@ -25,12 +26,13 @@ enum Composers {
 
     static let fleetWebhook = VirtualMachineFleetWebhook(
         logger: logger(subsystem: "VirtualMachineFleetWebhook"),
-        webhookServer: WebhookServer(),
+        webhookServer: WebhookServer(hostname: environment.hostname, numberOfMachines: environment.numberOfMachines),
         virtualMachineProvider: TartVirtualMachineProvider(
             logger: logger(subsystem: "TartVirtualMachineProvider"),
             tart: tart,
             sshClient: sshClient
-        )
+        ),
+        settings: environment
     )
 
     static let sshClient = VirtualMachineSSHClient(
@@ -61,11 +63,6 @@ enum Composers {
     }
 }
 
-guard let webhookPort = environment.webhookPort else {
-    print("Webhook port not set")
-    exit(1)
-}
-
 Composers.localNetworkPrivacy.checkAccessState { result in
     print("Local network access result: \(result)")
 }
@@ -76,15 +73,7 @@ Task {
         _ = try? FileManager.default.contentsOfDirectory(at: homeFolderURL, includingPropertiesForKeys: nil)
     }
 
-    try await Composers.fleetWebhook.startCommandLine(
-        numberOfMachines: environment.numberOfMachines,
-        gitHubRunnerLabels: environment.runnerLabels,
-        webhookPort: webhookPort,
-        isInsecure: environment.isInsecure,
-        isHeadless: environment.isHeadless,
-        insecureDomains: environment.insecureDomains,
-        netBridgedAdapter: environment.netBridgedAdapter
-    )
+    try await Composers.fleetWebhook.startCommandLine()
 }
 
 RunLoop.main.run()

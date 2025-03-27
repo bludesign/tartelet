@@ -6,6 +6,21 @@ configs:
   Debug: debug
   Release: release
 targets:
+  tart-router:
+    type: tool
+    platform: macOS
+    sources: [tart-router]
+    postCompileScripts:
+    - name: Run SwiftLint
+      path: scripts/swiftlint.sh
+      basedOnDependencyAnalysis: false
+    dependencies:
+      - package: Logging
+        products: [LoggingData, LoggingDomain]
+      - package: Router
+        products: Router
+      - package: WebServer
+        products: WebServer
   tart-executor:
     type: tool
     platform: macOS
@@ -20,7 +35,7 @@ targets:
       - package: FileSystem
         products: [FileSystemData, FileSystemDomain]
       - package: GitHub
-        products: [GitHubData, GitHubDomain, WebhookServer]
+        products: [GitHubData, GitHubDomain]
       - package: Logging
         products: [LoggingData, LoggingDomain]
       - package: Networking
@@ -31,12 +46,16 @@ targets:
         products: [SSHData, SSHDomain]
       - package: VirtualMachine
         products: [VirtualMachineData, VirtualMachineDomain]
+      - package: WebServer
+        products: WebServer
 localPackages:
   - Packages/EnvironmentSettings
   - Packages/FileSystem
   - Packages/GitHub
   - Packages/Logging
   - Packages/Networking
+  - Packages/Router
   - Packages/SSH
   - Packages/Shell
   - Packages/VirtualMachine
+  - Packages/WebServer

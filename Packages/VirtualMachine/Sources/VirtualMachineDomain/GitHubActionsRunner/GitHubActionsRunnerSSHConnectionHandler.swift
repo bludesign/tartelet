@@ -2,7 +2,6 @@ import Foundation
 import GitHubDomain
 import LoggingDomain
 import SSHDomain
-import WebhookServer
 
 private enum GitHubActionsRunnerSSHConnectionHandlerError: LocalizedError {
     case organizationNameUnavailable

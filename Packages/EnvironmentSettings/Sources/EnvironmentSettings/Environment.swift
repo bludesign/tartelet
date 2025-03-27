@@ -8,30 +8,32 @@ public final class Environment: TartHomeProvider,
                          GitHubActionsRunnerConfiguration,
                          VirtualMachineSSHCredentialsStore,
                          GitHubCredentialsStore {
-    public var organizationName: String?
-    public var repositoryName: String?
-    public var ownerName: String?
-    public var appId: String?
-    public var privateKey: Data?
-    public var username: String?
-    public var password: String?
-    public var runnerDisableUpdates = false
-    public var runnerScope: GitHubRunnerScope = .organization
-    public var runnerLabels: String = ""
-    public var runnerGroup: String = ""
-    public var homeFolderURL: URL?
-    public var numberOfMachines = 1
-    public var netBridgedAdapter: String?
-    public var isHeadless = false
-    public var isInsecure = false
-    public var insecureDomains: [String]
-    public var webhookPort: Int?
+    public let hostname: String
+    public let organizationName: String?
+    public let repositoryName: String?
+    public let ownerName: String?
+    public let appId: String?
+    public let privateKey: Data?
+    public let username: String?
+    public let password: String?
+    public let runnerDisableUpdates: Bool
+    public let runnerScope: GitHubRunnerScope
+    public let runnerLabels: String
+    public let runnerGroup: String
+    public let homeFolderURL: URL?
+    public let numberOfMachines: Int
+    public let netBridgedAdapter: String?
+    public let isHeadless: Bool
+    public let isInsecure: Bool
+    public let insecureDomains: [String]
+    public let webhookPort: Int
 
     public init() throws {
         let configUrl = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("tart-executor.yaml")
         let contents = try Data(contentsOf: configUrl)
         let environmentYaml = try YAMLDecoder().decode(EnvironmentYaml.self, from: contents)
 
+        hostname = environmentYaml.hostname
         organizationName = environmentYaml.github.organizationName
         repositoryName = environmentYaml.github.repositoryName
         ownerName = environmentYaml.github.ownerName

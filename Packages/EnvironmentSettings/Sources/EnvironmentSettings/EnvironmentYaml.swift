@@ -1,13 +1,20 @@
+import Foundation
 import GitHubDomain
 
-// swiftlint:disable nesting
-struct EnvironmentYaml: Decodable {
-    struct Tart: Decodable {
-        struct SSH: Decodable {
-            let username: String
-            let password: String
-        }
+// MARK: - EnvironmentYaml
 
+struct EnvironmentYaml: Decodable {
+    let tart: Tart
+    let github: Github
+    let runner: Runner
+    let webhook: Webhook
+    let hostname: String
+}
+
+// MARK: - Tark
+
+extension EnvironmentYaml {
+    struct Tart: Decodable {
         let homeFolder: String?
         let netBridgedAdapter: String?
         let isHeadless: Bool?
@@ -15,7 +22,23 @@ struct EnvironmentYaml: Decodable {
         let insecureDomains: [String]?
         let numberOfVirtualMachines: Int?
         let ssh: SSH?
+        let defaultMemory: Int?
+        let defaultCpu: Int?
     }
+}
+
+// MARK: - SSH
+
+extension EnvironmentYaml.Tart {
+    struct SSH: Decodable {
+        let username: String
+        let password: String
+    }
+}
+
+// MARK: - Github
+
+extension EnvironmentYaml {
     struct Github: Decodable {
         let runnerScope: GitHubRunnerScope
         let organizationName: String?
@@ -24,18 +47,22 @@ struct EnvironmentYaml: Decodable {
         let appId: String
         let privateKey: String
     }
+}
+
+// MARK: - Runner
+
+extension EnvironmentYaml {
     struct Runner: Decodable {
         let labels: String
         let group: String?
         let disableUpdates: Bool?
     }
+}
+
+// MARK: - Webhook
+
+extension EnvironmentYaml {
     struct Webhook: Decodable {
         let port: Int
     }
-
-    let tart: Tart
-    let github: Github
-    let runner: Runner
-    let webhook: Webhook
 }
-// swiftlint:enable nesting

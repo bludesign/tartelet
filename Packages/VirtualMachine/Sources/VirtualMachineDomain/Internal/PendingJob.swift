@@ -1,5 +1,5 @@
 import Foundation
-import WebhookServer
+import WebServer
 
 final class PendingJob: Identifiable {
     let workflowJob: WorkflowJob

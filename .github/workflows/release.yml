@@ -22,19 +22,34 @@ jobs:
         run: brew install xcodegen
       - name: Run xcodegen
         run: xcodegen
-      - name: Run xcodebuild
+      - name: Run xcodebuild tart-executor
         run: xcodebuild -quiet -scheme tart-executor -project ./Tartelet.xcodeproj -configuration Release -destination 'generic/platform=macOS' -archivePath ./builds/tart-executor archive
+      - name: Run xcodebuild tart-router
+        run: xcodebuild -quiet -scheme tart-router -project ./Tartelet.xcodeproj -configuration Release -destination 'generic/platform=macOS' -archivePath ./builds/tart-router archive
       - name: Zip tart-executor
         run: zip -j builds/tart-executor.zip builds/tart-executor.xcarchive/Products/usr/local/bin/tart-executor
+      - name: Zip tart-router
+        run: zip -j builds/tart-executor.zip builds/tart-executor.xcarchive/Products/usr/local/bin/tart-router
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: builds/tart-executor.zip
-      - name: Update homebrew
+          files: builds/tart-router.zip
+      - name: Update homebrew tart-executor
         uses: mislav/bump-homebrew-formula-action@v3
         with:
           formula-name: tart-executor
           download-url: https://github.com/bludesign/tartelet/releases/download/${{ github.ref_name }}/tart-executor.zip
+          homebrew-tap: bludesign/homebrew-tart
+          create-pullrequest: false
+          create-branch: false
+        env:
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
+      - name: Update homebrew tart-router
+        uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          formula-name: tart-router
+          download-url: https://github.com/bludesign/tartelet/releases/download/${{ github.ref_name }}/tart-router.zip
           homebrew-tap: bludesign/homebrew-tart
           create-pullrequest: false
           create-branch: false

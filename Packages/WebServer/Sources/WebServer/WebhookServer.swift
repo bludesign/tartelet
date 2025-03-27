@@ -1,44 +1,12 @@
 import Combine
 import FlyingFox
 import Foundation
-import GitHubDomain
-
-public struct WorkflowJob: Codable, Identifiable, Hashable {
-    public let id: Int
-    public let action: WorkflowAction
-    public let labels: Set<String>
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}
-
-public enum WorkflowAction: String {
-    case waiting
-    case queued
-    case inProgress = "in_progress"
-    case completed
-    case unknown
-}
-
-extension WorkflowAction: Codable {
-    public init(from decoder: Decoder) throws {
-        self = try WorkflowAction(rawValue: decoder.singleValueContainer().decode(String.self)) ?? .unknown
-    }
-}
-
-struct WebhookResponse: Codable {
-    struct WorkflowJobResponse: Codable, Identifiable {
-        let id: Int
-        let labels: Set<String>
-    }
-
-    let action: WorkflowAction
-    let workflow_job: WorkflowJobResponse
-}
 
 public final class WebhookServer {
+    private let hostname: String
+    private let numberOfMachines: Int
     private let decoder = JSONDecoder()
+    private let encoder = JSONEncoder()
     private let workflowJobSubject = PassthroughSubject<WorkflowJob, Never>()
     private var server: HTTPServer?
 
@@ -51,7 +19,9 @@ public final class WebhookServer {
         workflowJobSubject.eraseToAnyPublisher()
     }
 
-    public init() {
+    public init(hostname: String, numberOfMachines: Int) {
+        self.hostname = hostname
+        self.numberOfMachines = numberOfMachines
     }
 
     public func run(port: Int) async throws {
@@ -78,9 +48,32 @@ public final class WebhookServer {
             guard let self else {
                 return .init(statusCode: .badGateway)
             }
-            let string = "tart_executor_in_progress_jobs \(inProgressJobs)\ntart_executor_pending_jobs \(pendingJobs)\ntart_executor_started_pending_jobs \(startedPendingJobs)\ntart_executor_virtual_machines \(virtualMachines)"
+            let labels = "{hostname=\"\(hostname)\"}"
+            let string = """
+tart_executor_in_progress_jobs\(labels) \(inProgressJobs)
+tart_executor_pending_jobs\(labels) \(pendingJobs)
+tart_executor_started_pending_jobs\(labels) \(startedPendingJobs)
+tart_executor_virtual_machines\(labels) \(virtualMachines)
+tart_executor_virtual_machine_limit\(labels) \(numberOfMachines)
+"""
             let data = Data(string.utf8)
-            return .init( statusCode: .ok, body: data)
+            return .init(statusCode: .ok, body: data)
+        }
+        await server.appendRoute("GET /status") { [weak self] _ in
+            guard let self else {
+                return .init(statusCode: .badGateway)
+            }
+
+            let status = TartHostStatus(
+                inProgressJobs: inProgressJobs,
+                pendingJobs: pendingJobs,
+                startedPendingJobs: startedPendingJobs,
+                activeVirtualMachines: virtualMachines,
+                virtualMachineLimit: numberOfMachines
+            )
+
+            let body = try encoder.encode(status)
+            return .init(statusCode: .ok, body: body)
         }
         try await server.run()
     }
