@@ -29,7 +29,7 @@ jobs:
       - name: Zip tart-executor
         run: zip -j builds/tart-executor.zip builds/tart-executor.xcarchive/Products/usr/local/bin/tart-executor
       - name: Zip tart-router
-        run: zip -j builds/tart-executor.zip builds/tart-executor.xcarchive/Products/usr/local/bin/tart-router
+        run: zip -j builds/tart-executor.zip builds/tart-router.xcarchive/Products/usr/local/bin/tart-router
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
