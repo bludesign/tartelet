@@ -51,22 +51,4 @@ public final class Environment: TartHomeProvider,
         insecureDomains = environmentYaml.tart.insecureDomains ?? []
         webhookPort = environmentYaml.webhook.port
     }
-
-    public func setUsername(_ username: String?) {
-    }
-
-    public func setPassword(_ password: String?) {
-    }
-
-    public func setOrganizationName(_ organizationName: String?) {
-    }
-
-    public func setRepository(_ repositoryName: String?, withOwner ownerName: String?) {
-    }
-
-    public func setAppID(_ appID: String?) {
-    }
-
-    public func setPrivateKey(_ privateKeyData: Data?) {
-    }
 }

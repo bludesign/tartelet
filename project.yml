@@ -35,7 +35,6 @@ localPackages:
   - Packages/EnvironmentSettings
   - Packages/FileSystem
   - Packages/GitHub
-  - Packages/Keychain
   - Packages/Logging
   - Packages/Networking
   - Packages/SSH

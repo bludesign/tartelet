@@ -1,10 +1,3 @@
-//
-//  main.swift
-//  tartelet
-//
-//  Created by Chandler Huff on 3/21/25.
-//
-
 import EnvironmentSettings
 import FileSystemData
 import Foundation

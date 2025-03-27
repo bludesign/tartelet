@@ -18,7 +18,6 @@ let package = Package(
         ])
     ],
     dependencies: [
-        .package(path: "../Keychain"),
         .package(path: "../Networking"),
         .package(url: "https://github.com/Kitura/Swift-JWT", from: "4.0.0"),
         .package(url: "https://github.com/swhitty/FlyingFox.git", .upToNextMajor(from: "0.21.0"))
@@ -26,7 +25,6 @@ let package = Package(
     targets: [
         .target(name: "GitHubData", dependencies: [
             "GitHubDomain",
-            .product(name: "Keychain", package: "Keychain"),
             .product(name: "NetworkingDomain", package: "Networking")
         ]),
         .target(name: "GitHubDomain", dependencies: [
