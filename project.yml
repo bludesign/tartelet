@@ -23,46 +23,8 @@ targets:
         products: [GitHubData, GitHubDomain, WebhookServer]
       - package: Logging
         products: [LoggingData, LoggingDomain]
-      - package: MenuBar
-        products: MenuBar
       - package: Networking
         products: [NetworkingData, NetworkingDomain]
-      - package: Shell
-        products: [ShellData, ShellDomain]
-      - package: SSH
-        products: [SSHData, SSHDomain]
-      - package: VirtualMachine
-        products: [VirtualMachineData, VirtualMachineDomain]
-  Tartelet:
-    configFiles:
-      Debug: xcconfigs/General.xcconfig
-      Release: xcconfigs/General.xcconfig
-    scheme:
-      testPlans:
-        - path: Tartelet/Tartelet.xctestplan
-          defaultPlan: true
-    type: application
-    platform: macOS
-    sources: [Tartelet]
-    postCompileScripts:
-    - name: Run SwiftLint
-      path: scripts/swiftlint.sh
-      basedOnDependencyAnalysis: false
-    dependencies:
-      - package: FileSystem
-        products: [FileSystemData, FileSystemDomain]
-      - package: GitHub
-        products: [GitHubData, GitHubDomain, WebhookServer]
-      - package: Keychain
-        products: Keychain
-      - package: Logging
-        products: [LoggingData, LoggingDomain]
-      - package: MenuBar
-        products: MenuBar
-      - package: Networking
-        products: [NetworkingData, NetworkingDomain]
-      - package: Settings
-        products: [SettingsData, SettingsDomain, SettingsUI]
       - package: Shell
         products: [ShellData, ShellDomain]
       - package: SSH
@@ -75,9 +37,7 @@ localPackages:
   - Packages/GitHub
   - Packages/Keychain
   - Packages/Logging
-  - Packages/MenuBar
   - Packages/Networking
-  - Packages/Settings
   - Packages/SSH
   - Packages/Shell
   - Packages/VirtualMachine
