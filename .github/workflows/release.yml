@@ -33,8 +33,9 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: builds/tart-executor.zip
-          files: builds/tart-router.zip
+          files: |
+            builds/tart-executor.zip
+            builds/tart-router.zip
       - name: Update homebrew tart-executor
         uses: mislav/bump-homebrew-formula-action@v3
         with:
